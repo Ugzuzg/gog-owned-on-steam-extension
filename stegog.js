@@ -1834,7 +1834,31 @@ Object.keys(gogGames).forEach((key) => {
 });
 
 const key = 'F6632EB18DA44A67BF2B446E6C476822';
-const endpoint = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/';
+const endpoint = 'https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/';
+
+const displaySteamIdModal = () => {
+  const modal = document.createElement('div');
+  modal.className = 'stegog-modal';
+
+  const input = document.createElement('input');
+  input.setAttribute('placeholder', 'steamid');
+  modal.appendChild(input);
+
+  const saveButton = document.createElement('button');
+  saveButton.appendChild(document.createTextNode('Save'));
+  saveButton.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await browser.storage.sync.set({
+      steamid: input.value
+    });
+    modal.remove();
+    doJob();
+  });
+  modal.appendChild(saveButton);
+
+  document.body.appendChild(modal);
+};
+
 const doJob = async () => {
   let res = {};
   try {
@@ -1845,6 +1869,7 @@ const doJob = async () => {
   const steamid = res.steamid;
 
   if (!steamid) {
+    displaySteamIdModal();
     console.log('SteGOG: please provide steamid for addon to work');
     return;
   }
@@ -1878,6 +1903,7 @@ const doJob = async () => {
       const steamLink = `https://store.steampowered.com/app/${steamGame.appid}/`;
       indicator.setAttribute('href', steamLink);
       indicator.setAttribute('target', '_blank');
+      indicator.setAttribute('style', `background-image: url(${browser.extension.getURL('images/g99.png')});`);
       indicator.className = 'stegog-owned';
 
       product.appendChild(indicator);
