@@ -1,3 +1,16 @@
+const gogToSteamId = [
+  // 140
+  { gogIds: ['1096313866'], steamIds: ['242820'] },
+  // Deponia
+  { gogIds: ['1207659103'], steamIds: ['214340'] },
+  // Deponia 4: Deponia Doomsday
+  { gogIds: ['1439969610'], steamIds: ['421050'] },
+  // Home
+  { gogIds: [], steamIds: ['215670'] },
+  // Shadow Warrior
+  { gogIds: ['1207659573'], steamIds: ['233130'] },
+];
+
 const gogGames = {
   "1096313866": "140",
   "1207664483": "1849: Gold Edition",
@@ -1804,7 +1817,7 @@ const gogGames = {
   "1207658903": "Zork Anthology, The",
   "1207658913": "Zork Nemesis: The Forbidden Lands",
   "1207658948": "Zork: Grand Inquisitor",
-  "1207659097": "Zurück in die Zukunft: Das Spiel"
+  "1207659097": "Zurück in die Zukunft: Das Spiel",
 };
 
 const stripTitle = (title) => {
@@ -1840,9 +1853,14 @@ const doJob = async () => {
   const steamOwned = (await response.json()).response.games;
 
   const checkGames = () => {
-    const searchByTitle = (gogTitle) => {
-      if (!gogTitle) return null;
+    const searchByTitle = (gogId, gogTitle) => {
       return steamOwned.find(v => {
+        // if there's a direct link between game ids return it
+        const directEntry = gogToSteamId.find(gs => gs.steamIds.includes(String(v.appid)));
+        if (directEntry) return directEntry.gogIds.includes(gogId);
+
+        // try ineffective title comparison method
+        if (!gogTitle) return false;
         const steamTitle = stripTitle(v.name);
         return steamTitle.includes(gogTitle) || gogTitle.includes(steamTitle);
       });
@@ -1852,9 +1870,8 @@ const doJob = async () => {
       const id = product.getAttribute('gog-product') || product.getAttribute('gog-mosaic-product');
       const gameTitle = gogGames[id];
 
-
       if (product.querySelector('.stegog-owned')) return;
-      const steamGame = searchByTitle(gameTitle);
+      const steamGame = searchByTitle(id, gameTitle);
       if (!steamGame) return;
 
       const indicator = document.createElement('a');
