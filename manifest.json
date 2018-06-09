@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "SteGOG",
+  "version": "0.0.2",
+  "description": "Display games owned on Steam in GOG",
+
+  "icons": {
+    "48": "icons/stegog-48.png"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": true
+  },
+  "permissions": [
+    "*://api.steampowered.com/*",
+    "storage"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.gog.com/*"],
+      "js": ["stegog.js"],
+      "css": ["stegog.css"]
+    }
+  ],
+  "applications": {
+    "gecko": {
+      "id": "stegog@github.com"
+    }
+  }
+}
