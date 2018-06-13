@@ -2,8 +2,9 @@
   "name": "gog-steam-owned",
   "version": "0.0.6",
   "description": "",
-  "main": "browser-polyfill.min.js",
+  "main": "stegog.js",
   "scripts": {
+    "package": "npm-pack-zip",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
