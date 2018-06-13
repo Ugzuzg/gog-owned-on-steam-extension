@@ -26,11 +26,7 @@
   "files": [
     "icons/*",
     "images/*",
-    "stegog.js",
-    "stegog.css",
-    "manifest.json",
-    "options.js",
-    "options.html",
-    "steamapi.js"
+    "src/*",
+    "manifest.json"
   ]
 }

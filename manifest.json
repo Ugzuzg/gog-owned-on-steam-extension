@@ -8,7 +8,7 @@
     "48": "icons/stegog-48.png"
   },
   "options_ui": {
-    "page": "options.html",
+    "page": "src/options.html",
     "browser_style": true
   },
   "permissions": [
@@ -21,10 +21,10 @@
     {
       "matches": ["*://*.gog.com/*"],
       "js": [
-        "browser-polyfill.min.js",
-        "stegog.js"
+        "src/browser-polyfill.min.js",
+        "src/stegog.js"
       ],
-      "css": ["stegog.css"]
+      "css": ["src/stegog.css"]
     }
   ],
   "applications": {
