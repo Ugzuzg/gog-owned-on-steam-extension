@@ -13,6 +13,7 @@
   },
   "permissions": [
     "*://api.steampowered.com/*",
+    "*://raw.githubusercontent.com/Ugzuzg/*",
     "storage"
   ],
 
