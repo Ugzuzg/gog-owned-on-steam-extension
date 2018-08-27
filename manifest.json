@@ -21,8 +21,8 @@
     {
       "matches": ["*://*.gog.com/*"],
       "js": [
-        "node_modules/bluebird/js/browser/bluebird.min.js",
-        "node_modules/lodash/lodash.min.js",
+        "src/bluebird.min.js",
+        "src/lodash.min.js",
         "src/browser-polyfill.min.js",
         "src/stegog.js"
       ],
