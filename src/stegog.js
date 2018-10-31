@@ -31,7 +31,7 @@ const checkGames = (steamid, steamOwned) => {
   const addIndicator = (product) => {
     try {
       let gameUrl = null;
-      if (product.className.includes('column--right')) {
+      if (product.getAttribute('card-product')) {
         gameUrl = window.location.pathname;
       } else {
         gameUrl = product.querySelector('[href]').getAttribute('href');
@@ -49,15 +49,21 @@ const checkGames = (steamid, steamOwned) => {
       indicator.setAttribute('style', `background-image: url(${browser.extension.getURL('images/g99.png')});`);
       indicator.className = 'stegog-owned';
 
-      product.appendChild(indicator);
+      if (product.querySelector('.product-actions')) {
+        product.querySelector('.product-actions').appendChild(indicator);
+      } else {
+        product.appendChild(indicator);
+      }
     } catch (err) {
       console.log(err);
     }
   };
 
-  const products = document.querySelectorAll('[gog-product]');
+  const cardProducts = document.querySelectorAll('[card-product]');
+  cardProducts.forEach(addIndicator);
+  const products = document.querySelectorAll('[product-tile-id]');
   products.forEach(addIndicator);
-  const mosaicProducts = document.querySelectorAll('[gog-mosaic-product]');
+  const mosaicProducts = document.querySelectorAll('[menu-product]');
   mosaicProducts.forEach(addIndicator);
 };
 
