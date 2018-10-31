@@ -55,7 +55,6 @@ const checkGames = (steamid, steamOwned) => {
         product.appendChild(indicator);
       }
     } catch (err) {
-      console.log(err);
     }
   };
 
@@ -119,7 +118,6 @@ const doJob = async () => {
   const steamOwned = (await response.json()).response.games;
   const plains = await getItadPlains(steamOwned);
   const ownedGogLinks = await getGogLinks(plains);
-  console.log(ownedGogLinks);
 
   checkGames(steamid, ownedGogLinks);
   setInterval(() => checkGames(steamid, ownedGogLinks), 5000);
