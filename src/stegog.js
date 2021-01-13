@@ -3,13 +3,18 @@ const port = browser.runtime.connect({ name: 'stegog-content' });
 const backgroundFetch = async (name, params) => {
   return new P((resolve, reject) => {
     const id = _.uniqueId('request');
+
     const handler = ({ id: mId, data, error }) => {
       if (id !== mId) return;
+
       if (data) resolve(data);
       else if (error) reject(error);
       else resolve(null);
+
+      port.onMessage.removeListener(handler);
     };
     port.onMessage.addListener(handler);
+
     port.postMessage({ id, name, params });
   });
 };
