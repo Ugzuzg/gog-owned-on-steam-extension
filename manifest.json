@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "SteGOG",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "Display games owned on Steam in GOG",
 
   "icons": {
@@ -16,6 +16,14 @@
     "*://api.isthereanydeal.com/*",
     "storage"
   ],
+
+  "background": {
+    "scripts": [
+      "src/bluebird.min.js",
+      "src/browser-polyfill.min.js",
+      "src/background.js"
+    ]
+  },
 
   "content_scripts": [
     {

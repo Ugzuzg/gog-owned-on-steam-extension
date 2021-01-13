@@ -1,6 +1,18 @@
-const itadKey = 'd1af465a5309c5664c366ff24e8441d3cbbcf38e';
-const steamApiKey = 'F6632EB18DA44A67BF2B446E6C476822';
-const endpoint = 'https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/';
+const port = browser.runtime.connect({ name: 'stegog-content' });
+
+const backgroundFetch = async (name, params) => {
+  return new P((resolve, reject) => {
+    const id = _.uniqueId('request');
+    const handler = ({ id: mId, data, error }) => {
+      if (id !== mId) return;
+      if (data) resolve(data);
+      else if (error) reject(error);
+      else resolve(null);
+    };
+    port.onMessage.addListener(handler);
+    port.postMessage({ id, name, params });
+  });
+};
 
 const displaySteamIdModal = () => {
   const modal = document.createElement('div');
@@ -26,7 +38,7 @@ const displaySteamIdModal = () => {
 };
 
 const checkGames = (steamid, steamOwned) => {
-  const searchByUrl = gogUrl => _.find(steamOwned, { gogUrl });
+  const searchByUrl = (gogUrl) => _.find(steamOwned, { gogUrl });
 
   const addIndicator = (product) => {
     try {
@@ -54,49 +66,54 @@ const checkGames = (steamid, steamOwned) => {
       } else {
         product.appendChild(indicator);
       }
-    } catch (err) {
-    }
+    } catch (err) {}
   };
 
-  const cardProducts = document.querySelectorAll('[card-product]');
-  cardProducts.forEach(addIndicator);
-  const products = document.querySelectorAll('[product-tile-id]');
-  products.forEach(addIndicator);
-  const mosaicProducts = document.querySelectorAll('[menu-product]');
-  mosaicProducts.forEach(addIndicator);
+  const attributes = ['card-product', 'product-tile-id', 'menu-product', 'gog-product'];
+  _.flatMap(attributes, (attribute) => [...document.querySelectorAll(`[${attribute}]`)]).forEach((v) =>
+    addIndicator(v),
+  );
 };
 
 const getItadPlains = async (steamOwned) => {
   const sliceSize = 200;
   let games = {};
-  await P.map(_.times(Math.ceil(steamOwned.length / sliceSize)), async (i) => {
-    const gameIds = steamOwned.map(v => `app/${v.appid}`).slice(i * sliceSize, (i + 1) * sliceSize);
-    const response = await fetch(`https://api.isthereanydeal.com/v01/game/plain/id/?key=${itadKey}&shop=steam&ids=${gameIds.join(',')}`);
-    const data = (await response.json()).data;
-    games = {
-      ...games,
-      ...data,
-    };
-  }, { concurrency: 3 });
+  await P.map(
+    _.times(Math.ceil(steamOwned.length / sliceSize)),
+    async (i) => {
+      const gameIds = steamOwned.map((v) => `app/${v.appid}`).slice(i * sliceSize, (i + 1) * sliceSize);
+      const data = await backgroundFetch('fetchItadPlains', { gameIds });
+      games = {
+        ...games,
+        ...data,
+      };
+    },
+    { concurrency: 3 },
+  );
   return games;
 };
 
 const getGogLinks = async (plainsObject) => {
-  const plains = _.map(plainsObject, plain => plain);
+  const plains = _.map(plainsObject, (plain) => plain);
   const sliceSize = 30;
-  return _.flatten(await P.map(_.times(Math.ceil(plains.length / sliceSize)), async (i) => {
-    const p = plains.slice(i * sliceSize, (i + 1) * sliceSize);
-    const response = await fetch(`https://api.isthereanydeal.com/v01/game/prices/?key=${itadKey}&shops=gog&plains=${p.join(',')}`);
-    const games = (await response.json()).data;
-    return _.map(games, (value, key) => {
-      if (value.list.length === 0) return null;
-      const match = value.list[0].url.match(/(\/game\/\w+)\?.*/);
-      return {
-        gogUrl: match[1],
-        appid: _.find(_.toPairs(plainsObject), ([, plain]) => plain === key)[0].slice(4),
-      };
-    }).filter(v => v);
-  }, { concurrency: 3 }));
+  return _.flatten(
+    await P.map(
+      _.times(Math.ceil(plains.length / sliceSize)),
+      async (i) => {
+        const p = plains.slice(i * sliceSize, (i + 1) * sliceSize);
+        const games = await backgroundFetch('fetchItadByGog', { plains: p });
+        return _.map(games, (value, key) => {
+          if (value.list.length === 0) return null;
+          const match = value.list[0].url.match(/(\/game\/\w+)\?.*/);
+          return {
+            gogUrl: match[1],
+            appid: _.find(_.toPairs(plainsObject), ([, plain]) => plain === key)[0].slice(4),
+          };
+        }).filter((v) => v);
+      },
+      { concurrency: 3 },
+    ),
+  );
 };
 
 const doJob = async () => {
@@ -114,8 +131,7 @@ const doJob = async () => {
     return;
   }
 
-  const response = await fetch(`${endpoint}?key=${steamApiKey}&steamid=${steamid}&format=json&include_appinfo=1`);
-  const steamOwned = (await response.json()).response.games;
+  const steamOwned = await backgroundFetch('fetchSteamGames', { steamid });
   const plains = await getItadPlains(steamOwned);
   const ownedGogLinks = await getGogLinks(plains);
 
