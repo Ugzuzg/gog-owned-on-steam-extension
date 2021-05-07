@@ -20,7 +20,7 @@
   "homepage": "https://github.com/Ugzuzg/gog-owned-on-steam-extension#readme",
   "dependencies": {
     "bluebird": "^3.7.2",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "webextension-polyfill": "^0.7.0"
   },
   "devDependencies": {
