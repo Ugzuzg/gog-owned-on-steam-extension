@@ -1,23 +1,21 @@
 const port = browser.runtime.connect({ name: 'stegog-content' });
 
-const backgroundFetch = async (name, params) => {
-  return new P((resolve, reject) => {
-    const id = _.uniqueId('request');
+const backgroundFetch = async (name, params) =>  new P((resolve, reject) => {
+  const id = _.uniqueId('request');
 
-    const handler = ({ id: mId, data, error }) => {
-      if (id !== mId) return;
+  const handler = ({ id: mId, data, error }) => {
+    if (id !== mId) return;
 
-      if (data) resolve(data);
-      else if (error) reject(error);
-      else resolve(null);
+    if (data) resolve(data);
+    else if (error) reject(error);
+    else resolve(null);
 
-      port.onMessage.removeListener(handler);
-    };
-    port.onMessage.addListener(handler);
+    port.onMessage.removeListener(handler);
+  };
+  port.onMessage.addListener(handler);
 
-    port.postMessage({ id, name, params });
-  });
-};
+  port.postMessage({ id, name, params });
+});
 
 const displaySteamIdModal = () => {
   const modal = document.createElement('div');
@@ -109,7 +107,10 @@ const getGogLinks = async (plainsObject) => {
         const games = await backgroundFetch('fetchItadByGog', { plains: p });
         return _.map(games, (value, key) => {
           if (value.list.length === 0) return null;
-          const match = value.list[0].url.match(/(\/game\/\w+)\?.*/);
+          // the url is one of the following:
+          // https://www.gog.com/game/the_witcher_2
+          // https://track.adtraction.com/t/t?a=1578845458&as=1605593256&t=2&tk=1&url=http%3A%2F%2Fwww.gog.com%2Fgame%2Fthe_witcher_2
+          const match = value.list[0].url.match(/(\/game\/\w+)\?.*/) || decodeURIComponent(value.list[0].url).match(/(\/game\/\w+)(\?.*)?/);
           return {
             gogUrl: match[1],
             appid: _.find(_.toPairs(plainsObject), ([, plain]) => plain === key)[0].slice(4),
