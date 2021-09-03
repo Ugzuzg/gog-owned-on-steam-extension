@@ -1,6 +1,6 @@
 {
   "name": "gog-steam-owned",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "main": "stegog.js",
   "scripts": {
@@ -21,15 +21,15 @@
   "dependencies": {
     "bluebird": "^3.7.2",
     "lodash": "^4.17.20",
-    "webextension-polyfill": "^0.7.0"
+    "webextension-polyfill": "^0.8.0"
   },
   "devDependencies": {
-    "eslint": "^7.17.0",
+    "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-config-prettier": "^7.1.0",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.24.2",
     "npm-pack-zip": "^1.2.7",
-    "prettier": "^2.2.1"
+    "prettier": "^2.3.2"
   },
   "files": [
     "lib/*",
