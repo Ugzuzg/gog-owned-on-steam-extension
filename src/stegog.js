@@ -17,12 +17,25 @@ const backgroundFetch = async (name, params) =>  new P((resolve, reject) => {
   port.postMessage({ id, name, params });
 });
 
-const displaySteamIdModal = () => {
+const displaySteamIdModal = (steamid = '', withError = false) => {
   const modal = document.createElement('div');
   modal.className = 'stegog-modal';
 
+  const h1 = document.createElement('h1');
+  h1.innerText = 'SteGOG Settings';
+  modal.appendChild(h1);
+
+  const p = document.createElement('p');
+  if (withError) {
+    p.innerHTML = `Wasn't able to fetch anything with the provided steamID64. Please verify it. You can look it up on <a href="https://steamid.io" target="_blank" rel="noopener noreferrer">https://steamid.io</a>`;
+  } else {
+    p.innerHTML = `Please, enter steamID64. You can look it up on <a href="https://steamid.io" target="_blank" rel="noopener noreferrer">https://steamid.io</a>`;
+  }
+  modal.appendChild(p);
+
   const input = document.createElement('input');
-  input.setAttribute('placeholder', 'steamid');
+  input.setAttribute('placeholder', 'steamid64');
+  input.value = steamid;
   modal.appendChild(input);
 
   const saveButton = document.createElement('button');
@@ -137,7 +150,13 @@ const doJob = async () => {
     return;
   }
 
-  const steamOwned = await backgroundFetch('fetchSteamGames', { steamid });
+  let steamOwned;
+  try {
+    steamOwned = await backgroundFetch('fetchSteamGames', { steamid });
+  } catch (err) {
+    displaySteamIdModal(steamid, true);
+    return;
+  }
   const plains = await getItadPlains(steamOwned);
   const ownedGogLinks = await getGogLinks(plains);
 

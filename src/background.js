@@ -39,7 +39,7 @@ function connected(p) {
       })();
       p.postMessage({ id, data });
     } catch (error) {
-      p.postMessage({ id, error });
+      p.postMessage({ id, error: error.message });
     }
   });
 }
