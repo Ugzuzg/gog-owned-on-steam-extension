@@ -64,6 +64,7 @@ const checkGames = (steamid, steamOwned) => {
       } else {
         gameUrl = product.querySelector('[href]').getAttribute('href');
       }
+      gameUrl = gameUrl.slice(gameUrl.indexOf('/game'));
 
       if (product.querySelector('.stegog-owned')) return;
       // const steamGame = searchByTitle(id, gameTitle);
@@ -79,14 +80,16 @@ const checkGames = (steamid, steamOwned) => {
 
       if (product.querySelector('.product-actions')) {
         product.querySelector('.product-actions').appendChild(indicator);
+      } else if (product.querySelector('[selenium-id=productTile]')) {
+        product.querySelector('[selenium-id=productTile]').appendChild(indicator);
       } else {
         product.appendChild(indicator);
       }
     } catch (err) {}
   };
 
-  const attributes = ['card-product', 'product-tile-id', 'menu-product', 'gog-product'];
-  _.flatMap(attributes, (attribute) => [...document.querySelectorAll(`[${attribute}]`)]).forEach((v) =>
+  const attributes = ['[card-product]', '[product-tile-id]', '[menu-product]', '[gog-product]', 'product-tile'];
+  _.flatMap(attributes, (attribute) => [...document.querySelectorAll(`${attribute}`)]).forEach((v) =>
     addIndicator(v),
   );
 };
