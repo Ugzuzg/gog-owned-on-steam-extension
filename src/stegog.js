@@ -123,10 +123,13 @@ const getGogLinks = async (plainsObject) => {
         const games = await backgroundFetch('fetchItadByGog', { plains: p });
         return _.map(games, (value, key) => {
           if (value.list.length === 0) return null;
+
           // the url is one of the following:
           // https://www.gog.com/game/the_witcher_2
           // https://track.adtraction.com/t/t?a=1578845458&as=1605593256&t=2&tk=1&url=http%3A%2F%2Fwww.gog.com%2Fgame%2Fthe_witcher_2
           const match = value.list[0].url.match(/(\/game\/\w+)\?.*/) || decodeURIComponent(value.list[0].url).match(/(\/game\/\w+)(\?.*)?/);
+          if (!match) return null;
+
           return {
             gogUrl: match[1],
             appid: _.find(_.toPairs(plainsObject), ([, plain]) => plain === key)[0].slice(4),

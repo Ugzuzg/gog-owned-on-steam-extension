@@ -1,6 +1,6 @@
 {
   "name": "gog-steam-owned",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "",
   "main": "stegog.js",
   "scripts": {
