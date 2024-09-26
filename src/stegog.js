@@ -1,21 +1,22 @@
 const port = browser.runtime.connect({ name: 'stegog-content' });
 
-const backgroundFetch = async (name, params) =>  new P((resolve, reject) => {
-  const id = _.uniqueId('request');
+const backgroundFetch = async (name, params) =>
+  new P((resolve, reject) => {
+    const id = _.uniqueId('request');
 
-  const handler = ({ id: mId, data, error }) => {
-    if (id !== mId) return;
+    const handler = ({ id: mId, data, error }) => {
+      if (id !== mId) return;
 
-    if (data) resolve(data);
-    else if (error) reject(error);
-    else resolve(null);
+      if (data) resolve(data);
+      else if (error) reject(error);
+      else resolve(null);
 
-    port.onMessage.removeListener(handler);
-  };
-  port.onMessage.addListener(handler);
+      port.onMessage.removeListener(handler);
+    };
+    port.onMessage.addListener(handler);
 
-  port.postMessage({ id, name, params });
-});
+    port.postMessage({ id, name, params });
+  });
 
 const displaySteamIdModal = (steamid = '', withError = false) => {
   const modal = document.createElement('div');
@@ -54,21 +55,17 @@ const displaySteamIdModal = (steamid = '', withError = false) => {
 };
 
 const checkGames = (steamid, steamOwned) => {
-  const searchByUrl = (gogUrl) => _.find(steamOwned, { gogUrl });
+  const searchByGogId = (gogId) => _.find(steamOwned, { gogId });
 
   const addIndicator = (product) => {
     try {
-      let gameUrl = null;
-      if (product.getAttribute('card-product')) {
-        gameUrl = window.location.pathname;
-      } else {
-        gameUrl = product.querySelector('[href]').getAttribute('href');
-      }
-      gameUrl = gameUrl.slice(gameUrl.indexOf('/game'));
+      const gameId =
+        product.getAttribute('card-product') ??
+        product.getAttribute('menu-product') ??
+        product.querySelector('[data-product-id]')?.getAttribute('data-product-id');
 
       if (product.querySelector('.stegog-owned')) return;
-      // const steamGame = searchByTitle(id, gameTitle);
-      const steamGame = searchByUrl(gameUrl);
+      const steamGame = searchByGogId(gameId);
       if (!steamGame) return;
 
       const indicator = document.createElement('a');
@@ -89,9 +86,7 @@ const checkGames = (steamid, steamOwned) => {
   };
 
   const attributes = ['[card-product]', '[product-tile-id]', '[menu-product]', '[gog-product]', 'product-tile'];
-  _.flatMap(attributes, (attribute) => [...document.querySelectorAll(`${attribute}`)]).forEach((v) =>
-    addIndicator(v),
-  );
+  _.flatMap(attributes, (attribute) => [...document.querySelectorAll(`${attribute}`)]).forEach((v) => addIndicator(v));
 };
 
 const getItadPlains = async (steamOwned) => {
@@ -101,7 +96,7 @@ const getItadPlains = async (steamOwned) => {
     _.times(Math.ceil(steamOwned.length / sliceSize)),
     async (i) => {
       const gameIds = steamOwned.map((v) => `app/${v.appid}`).slice(i * sliceSize, (i + 1) * sliceSize);
-      const data = await backgroundFetch('fetchItadPlains', { gameIds });
+      const data = await backgroundFetch('lookupItadIdsByShopIds', { shopId: 61, gameIds });
       games = {
         ...games,
         ...data,
@@ -120,21 +115,17 @@ const getGogLinks = async (plainsObject) => {
       _.times(Math.ceil(plains.length / sliceSize)),
       async (i) => {
         const p = plains.slice(i * sliceSize, (i + 1) * sliceSize);
-        const games = await backgroundFetch('fetchItadByGog', { plains: p });
+        const games = await backgroundFetch('lookupShopIdsByItadIds', { shopId: 35, gameIds: p });
         return _.map(games, (value, key) => {
-          if (value.list.length === 0) return null;
+          if (!value || value.length === 0) return [];
 
-          // the url is one of the following:
-          // https://www.gog.com/game/the_witcher_2
-          // https://track.adtraction.com/t/t?a=1578845458&as=1605593256&t=2&tk=1&url=http%3A%2F%2Fwww.gog.com%2Fgame%2Fthe_witcher_2
-          const match = value.list[0].url.match(/(\/game\/\w+)\?.*/) || decodeURIComponent(value.list[0].url).match(/(\/game\/\w+)(\?.*)?/);
-          if (!match) return null;
-
-          return {
-            gogUrl: match[1],
+          return value.map((gogId) => ({
+            gogId,
             appid: _.find(_.toPairs(plainsObject), ([, plain]) => plain === key)[0].slice(4),
-          };
-        }).filter((v) => v);
+          }));
+        })
+          .flat()
+          .filter(Boolean);
       },
       { concurrency: 3 },
     ),
