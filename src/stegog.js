@@ -54,7 +54,7 @@ const displaySteamIdModal = (steamid = '', withError = false) => {
   document.body.appendChild(modal);
 };
 
-const checkGames = (steamid, steamOwned) => {
+const checkGames = (steamOwned, node) => {
   const searchByGogId = (gogId) => _.find(steamOwned, { gogId });
 
   const addIndicator = (product) => {
@@ -86,17 +86,17 @@ const checkGames = (steamid, steamOwned) => {
   };
 
   const attributes = ['[card-product]', '[product-tile-id]', '[menu-product]', '[gog-product]', 'product-tile'];
-  _.flatMap(attributes, (attribute) => [...document.querySelectorAll(`${attribute}`)]).forEach((v) => addIndicator(v));
+  _.flatMap(attributes, (attribute) => [...node.querySelectorAll(`${attribute}`)]).forEach((v) => addIndicator(v));
 };
 
 const getItadPlains = async (steamOwned) => {
-  const sliceSize = 200;
+  const sliceSize = 2000;
   let games = {};
   await P.map(
     _.times(Math.ceil(steamOwned.length / sliceSize)),
     async (i) => {
       const gameIds = steamOwned.map((v) => `app/${v.appid}`).slice(i * sliceSize, (i + 1) * sliceSize);
-      const data = await backgroundFetch('lookupItadIdsByShopIds', { shopId: 61, gameIds });
+      const data = await backgroundFetch('lookupItadIdsByShopIds', { shopId: 61 /* steam */, gameIds });
       games = {
         ...games,
         ...data,
@@ -109,13 +109,13 @@ const getItadPlains = async (steamOwned) => {
 
 const getGogLinks = async (plainsObject) => {
   const plains = _.map(plainsObject, (plain) => plain);
-  const sliceSize = 30;
+  const sliceSize = 2000;
   return _.flatten(
     await P.map(
       _.times(Math.ceil(plains.length / sliceSize)),
       async (i) => {
         const p = plains.slice(i * sliceSize, (i + 1) * sliceSize);
-        const games = await backgroundFetch('lookupShopIdsByItadIds', { shopId: 35, gameIds: p });
+        const games = await backgroundFetch('lookupShopIdsByItadIds', { shopId: 35 /* gog */, gameIds: p });
         return _.map(games, (value, key) => {
           if (!value || value.length === 0) return [];
 
@@ -157,8 +157,15 @@ const doJob = async () => {
   const plains = await getItadPlains(steamOwned);
   const ownedGogLinks = await getGogLinks(plains);
 
-  checkGames(steamid, ownedGogLinks);
-  setInterval(() => checkGames(steamid, ownedGogLinks), 5000);
+  checkGames(ownedGogLinks, document);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      checkGames(ownedGogLinks, mutation.target);
+    });
+  });
+
+  observer.observe(document.body, { subtree: true, childList: true, attributes: false });
 };
 
 doJob();
