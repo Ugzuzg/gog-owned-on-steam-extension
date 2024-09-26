@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "SteGOG",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Display games owned on Steam in GOG",
 
   "icons": {
@@ -12,29 +12,16 @@
     "page": "src/options.html",
     "browser_style": true
   },
-  "permissions": [
-    "*://api.steampowered.com/*",
-    "*://api.isthereanydeal.com/*",
-    "storage"
-  ],
+  "permissions": ["*://api.steampowered.com/*", "*://api.isthereanydeal.com/*", "storage"],
 
   "background": {
-    "scripts": [
-      "lib/bluebird.min.js",
-      "lib/browser-polyfill.min.js",
-      "src/background.js"
-    ]
+    "scripts": ["lib/bluebird.min.js", "lib/browser-polyfill.min.js", "src/background.js"]
   },
 
   "content_scripts": [
     {
       "matches": ["*://*.gog.com/*"],
-      "js": [
-        "lib/bluebird.min.js",
-        "lib/browser-polyfill.min.js",
-        "lib/lodash.min.js",
-        "src/stegog.js"
-      ],
+      "js": ["lib/bluebird.min.js", "lib/browser-polyfill.min.js", "lib/lodash.min.js", "src/stegog.js"],
       "css": ["src/stegog.css"]
     }
   ],
@@ -43,7 +30,5 @@
       "id": "stegog@ugzuzg.com.amo"
     }
   },
-  "web_accessible_resources": [
-    "images/g99.png"
-  ]
+  "web_accessible_resources": ["images/g99.png"]
 }
