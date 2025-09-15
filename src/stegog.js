@@ -60,6 +60,7 @@ const checkGames = (steamOwned, node) => {
   const addIndicator = (product) => {
     try {
       const gameId =
+        product.getAttribute('product-tile-id') ??
         product.getAttribute('card-product') ??
         product.getAttribute('menu-product') ??
         product.querySelector('[data-product-id]')?.getAttribute('data-product-id');
@@ -72,7 +73,7 @@ const checkGames = (steamOwned, node) => {
       const steamLink = `https://store.steampowered.com/app/${steamGame.appid}/`;
       indicator.setAttribute('href', steamLink);
       indicator.setAttribute('target', '_blank');
-      indicator.setAttribute('style', `background-image: url(${browser.extension.getURL('images/g99.png')});`);
+      indicator.setAttribute('style', `background-image: url(${browser.runtime.getURL('images/g99.png')});`);
       indicator.className = 'stegog-owned';
 
       if (product.querySelector('.product-actions')) {
