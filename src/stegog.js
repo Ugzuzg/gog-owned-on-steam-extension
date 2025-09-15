@@ -95,11 +95,14 @@ const getItadPlains = async (steamOwned) => {
   await P.map(
     _.times(Math.ceil(steamOwned.length / sliceSize)),
     async (i) => {
-      const gameIds = steamOwned.map((v) => `app/${v.appid}`).slice(i * sliceSize, (i + 1) * sliceSize);
+      const gameIds = steamOwned
+        .map((v) => `app/${v.appid}`)
+        .filter((v) => v)
+        .slice(i * sliceSize, (i + 1) * sliceSize);
       const data = await backgroundFetch('lookupItadIdsByShopIds', { shopId: 61 /* steam */, gameIds });
       games = {
         ...games,
-        ...data,
+        ...Object.fromEntries(Object.entries(data).filter(([, value]) => value)),
       };
     },
     { concurrency: 3 },
