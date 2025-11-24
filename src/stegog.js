@@ -1,8 +1,10 @@
 const port = browser.runtime.connect({ name: 'stegog-content' });
 
+let uniqueIdCounter = 0;
+
 const backgroundFetch = async (name, params) =>
   new P((resolve, reject) => {
-    const id = _.uniqueId('request');
+    const id = crypto.randomUUID();
 
     const handler = ({ id: mId, data, error }) => {
       if (id !== mId) return;
@@ -155,6 +157,7 @@ const doJob = async () => {
   try {
     steamOwned = await backgroundFetch('fetchSteamGames', { steamid });
   } catch (err) {
+    console.log(err);
     displaySteamIdModal(steamid, true);
     return;
   }
