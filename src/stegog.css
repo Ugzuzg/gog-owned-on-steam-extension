@@ -19,6 +19,7 @@
   padding: 8px;
   max-width: 300px;
   border: 1px solid black;
+  color: black;
 }
 
 .stegog-modal input {
